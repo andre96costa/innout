@@ -2,20 +2,35 @@
 error_reporting(E_ALL & ~E_DEPRECATED);
 session_start();
 
-requireValidSession();
+requireValidSession(true);
 
 $exception = null;
 
-if (count($_POST) > 0) {
+$userData = [];
+
+if (count($_POST) === 0 && isset($_GET['update'])) {
+    $user = User::getOne(['id' => $_GET['update']]);
+    $userData = $user->getValues();
+    unset($userData['password']);
+} else if (count($_POST) > 0) {
     try {
         $newUser = new User($_POST);
-        $newUser->insert();
-        addSuccessMsg('Usuário cadastrado com sucesso!');
+        if ($newUser->id) {
+            $newUser->update();
+            addSuccessMsg('Usuário alterado com sucesso!');
+            header("Location: users.php");
+            exit();
+        }else {
+            $newUser->insert();
+            addSuccessMsg('Usuário cadastrado com sucesso!');
+        }
         $_POST = [];
     } catch (Exception $e) {
         $exception = $e;
+    }finally {
+        $userData = $_POST;
     }
 }
 
-
-loadTemplateView('save_user', compact('exception'));
+$dados = $userData + ['exception' => $exception];
+loadTemplateView('save_user', $dados);

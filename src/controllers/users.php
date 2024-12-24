@@ -2,7 +2,21 @@
 error_reporting(E_ALL & ~E_DEPRECATED);
 session_start();
 
-requireValidSession();
+requireValidSession(true);
+
+$exception = null;
+if (isset($_GET['delete'])) {
+    try {
+        User::deleteById($_GET['delete']);
+        addSuccessMsg("Usuário foi excluído com sucesso!");
+    }catch (Exception $e) {
+        if (stripos($e->getMessage(), ' FOREIGN KEY')) {
+            addErrorMsg("Não foi possível excluir o usuário com registro de ponto.");
+        }else {
+            $exception = $e;
+        }
+    }
+}
 
 $users = User::get();
 
@@ -14,4 +28,4 @@ foreach ($users as $user) {
 }
 
 
-loadTemplateView('users', compact('users'));
+loadTemplateView('users', compact('users', 'exception'));

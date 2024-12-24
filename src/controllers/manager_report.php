@@ -2,7 +2,7 @@
 error_reporting(E_ALL & ~E_DEPRECATED);
 session_start();
 
-requireValidSession();
+requireValidSession(true);
 
 $activeUsersCount = User::getActiveUsersCount();
 $absentUsers = WorkingHour::getAbsentUsers();
